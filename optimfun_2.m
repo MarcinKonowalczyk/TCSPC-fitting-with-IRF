@@ -1,4 +1,4 @@
-function [diff,m] = optimfun_2(p,t,data,plt)
+function [diff,m] = optimfun_2(p,t,data,weights,plt)
 
 if any(p<0)
     diff = Inf;
@@ -14,21 +14,22 @@ m = @(t,p)...
 
 fit = log10(m(t,p));
 
+diff = (data-fit).*weights;
+
 if plt % Plot
     figure(1); clf;
     s = subplot(4,1,1:3); hold on;
-    plot(t,data,t,fit);
+    plot(t,data,t,fit,'k--');
     plot(t,log10(eir(t,p(1),p(2),p(3)) + p(6)*ones(size(t))));
     plot(t,log10(eir(t,p(1),p(4),p(5)) + p(6)*ones(size(t))));
     grid on; box on;
     s = subplot(4,1,4);
-    plot(t,data-fit,'k');
+    plot(t,diff,'k');
     s.YLim = [-1 1]*max(s.YLim);
     grid on; box on;
     drawnow;
 end
 
-diff = data-fit;
 diff = diff.^2;
 % Make sure no infs (-ve data) or nans (incomplete data)
 diff(isinf(diff) | isnan(diff)) = [];
