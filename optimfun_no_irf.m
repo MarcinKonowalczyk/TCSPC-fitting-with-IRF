@@ -26,7 +26,7 @@ end
 nf = @(t,p) p(2)*ones(size(t)); % Noise floor funciton
 
 %% Model function
-m = @(t,p) eir_model(t,p); % Alias the function so it can be passes 
+m = @(t,p) eir_model(t,p); % Alias the function so it can be returned
 fit = log10(m(time,p)); % Fit to the data
 diff = (data-fit).*weights; % Difference between data and fit
 

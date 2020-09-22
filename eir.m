@@ -7,4 +7,6 @@ function y = eir(t,t0,h,tau)
 % h   - height of the response
 % tau - time constant of the resulting exponential
 
-y = h*exp(-(t-t0)/tau).*(t>t0);
+y = zeros(size(t));
+region = (t>t0);
+y(region) = h*exp(-(t(region)-t0)./tau);
