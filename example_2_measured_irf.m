@@ -94,39 +94,3 @@ for j = 1:3
     fprintf('  Magnitude: %.0f counts\n',pf(1+2*(j-1)));
     fprintf('  Time constant: %.2f ns\n',pf(2+2*(j-1)));
 end
-
-%%
-p = pf;
-data = log10(y1);
-fit = log10(m(t,[0,0,p]));
-fit_noise_floor = p(2);
-delta = data-fit;
-
-d = 3;
-
-figure(1); clf;
-s = subplot(4,1,1:3); hold on;
-plot(t(1:d:end),data(1:d:end),'ko','MarkerSize',4,'Color',[1 1 1]*0.7)
-plot(t,fit,'-','LineWidth',1);
-
-% Plot all the exp. impulse response functions
-for j = 1:numel(p)/2
-    offset = 2*(j-1);
-    y = @(t) eir(t,0,p(1+offset),p(2+offset));
-    plot(t,log10(irf_conv(y,irf_fun,t) + irf_noise_floor))
-end
-grid on; box on;
-title('TCSPC data fit, with IRF, %d eir functions')
-xlim([min(t),max(t)]); ylim([0 4.5]);
-ylabel('log_{10}( Intensity / counts )');
-s.XTickLabel = [];
-
-%{{
-s = subplot(4,1,4);
-stem(t(1:d:end),delta(1:d:end),'k.');
-xlim([min(t),max(t)]);
-s.YLim = [-1 1]*0.2;
-grid on; box on;
-title('Residuals');
-xlabel('time / ps'); ylabel('\Delta log_{10}( I )');
-xlim([0 50]);
