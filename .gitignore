@@ -1,4 +1,4 @@
-Decay_t0.csv
-IRF_9nm_slit.csv
 *.m~
 *.asv
+fminsearch.m
+optimset.m

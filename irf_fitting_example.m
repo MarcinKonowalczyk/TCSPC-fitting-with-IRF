@@ -1,9 +1,9 @@
 close all; clear; clc;
 
 %% Load data
-D = csvread('Decay_t0.csv',9,0);
+D = csvread('data_2.csv',1,0);
 t = D(:,1); y1 = D(:,2);
-D = csvread('IRF_9nm_slit.csv',9,0);
+D = csvread('irf.csv',1,0);
 irf = D(:,2);
 
 %% Plot
