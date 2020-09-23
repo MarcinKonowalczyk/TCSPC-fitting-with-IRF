@@ -1,23 +1,15 @@
-function yc = convolve(fun,irf,t,N,method)
-%% yc = convolve(fun,irf,t,N,method)
-%
+function yc = irf_conv(fun,irf,t,N,method)
+%% yc = irf_conv(fun,irf,t,N,method)
 %
 % Written by Marcin Konowalczyk
 % Timmel Group @ Oxford University
 
 %% Parse input
-if nargin < 5 || isempty(method)
-    method = 'conv';
-end
+if nargin < 5 || isempty(method), method = 'conv'; end
+if nargin < 4 || isempty(N), N = numel(t); end
 
-if nargin < 4 || isempty(N)
-    N = numel(t);
-end
-
-min_t = min(t);
-max_t = max(t);
-range = max_t-min_t;
-% Make padded time axis for convolution
+%% Make padded time axis for convolution
+min_t = min(t); max_t = max(t); range = max_t-min_t;
 pt = linspace(min_t-range,max_t+range,(3*N+1));
 pt2 = pt((N+1):(3*N+1));
 pt3 = pt((N+1):(N+(N+1)));

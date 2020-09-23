@@ -1,6 +1,6 @@
 function y = eir(t,t0,h,tau)
 %% y = eir(t,t0,h,tau)
-% Exponential impulse response
+% Exponential impulse response funciton
 %
 % t   - time axis
 % t0  - time of the impulse
@@ -10,3 +10,4 @@ function y = eir(t,t0,h,tau)
 y = zeros(size(t));
 region = (t>t0);
 y(region) = h*exp(-(t(region)-t0)./tau);
+end

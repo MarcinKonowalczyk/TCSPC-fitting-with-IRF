@@ -22,7 +22,7 @@ irf_fun = irf{1};
 irf_noise_floor = irf{2};
 
 %% Fit
-fit = convolve(@(k)eir_model(k,p),irf_fun,t); % Convolve eir_model with irf
+fit = irf_conv(@(k)eir_model(k,p),irf_fun,t); % Convolve eir_model with irf
 fit = fit + irf_noise_floor + fit_noise_floor; % Add the noise floor back up
 fit = log10(fit); % Log10 for fitting
 diff = (data-fit).*weights; % Difference between data and fit
@@ -38,7 +38,7 @@ if plot_flag
     for j = 1:ne
         offset = 2*(j-1);
         y = @(t) eir(t,p(1),p(3+offset),p(4+offset));
-        plot(t,log10(convolve(y,irf_fun,t) + irf_noise_floor + fit_noise_floor))
+        plot(t,log10(irf_conv(y,irf_fun,t) + irf_noise_floor + fit_noise_floor))
     end
     grid on; box on;
     title(sprintf('TCSPC data fit, with IRF, %d eir functions',ne))
@@ -49,7 +49,7 @@ if plot_flag
     s = subplot(4,1,4);
     plot(t,diff,'k');
     xlim([min(t),max(t)]);
-    s.YLim = [-1 1]*max(s.YLim);
+    s.YLim = [-1 1]*max(abs(s.YLim));
     grid on; box on;
     title('Residuals');
     xlabel('time / ps'); ylabel('\Delta log10( I )');
@@ -63,18 +63,20 @@ diff = sqrt(mean(diff.^2));
 
 % Alias the model function so it can be an output argument
 if nargout > 1
-    m = @(t,p) convolve(@(k)eir_model(k,p),irf_fun,t) + irf_noise_floor + fit_noise_floor;
+    m = @(t,p) irf_conv(@(k)eir_model(k,p),irf_fun,t) + irf_noise_floor + fit_noise_floor;
 end
 end
 
-function y = eir_model(t,p)
-%% Exponential impulse response model
-% This time without the noise floor, because it has to be added *after*
-% convolution
-ne = (numel(p)-2)/2; % Number of exp. components
-y = 0;
-for j = 1:ne
-    offset = 2*(j-1);
-    y = y + eir(t,p(1),p(3+offset),p(4+offset));
-end
+function y = eir(t,t0,h,tau)
+%% y = eir(t,t0,h,tau)
+% Exponential impulse response funciton
+%
+% t   - time axis
+% t0  - time of the impulse
+% h   - height of the response
+% tau - time constant of the resulting exponential
+
+y = zeros(size(t));
+region = (t>t0);
+y(region) = h*exp(-(t(region)-t0)./tau);
 end
