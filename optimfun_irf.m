@@ -1,5 +1,5 @@
-function [diff,m] = optimfun_irf(p,t,data,irf,weights,plot_flag)
-%% [diff,m] = optimfun_irf(p,t,data,irf,weights,plot_flag)
+function [delta,m] = optimfun_irf(p,t,data,irf,weights,plot_flag)
+%% [delta,m] = optimfun_irf(p,t,data,irf,weights,plot_flag)
 % Sum of n expnential impulse responses with a noise floor.
 % 
 % 'p' if the vector of model parameters
@@ -14,18 +14,22 @@ if nargin < 6 || isempty(plot_flag), plot_flag = false; end
 if nargin < 5 || isempty(weights), weights = ones(size(t)); end
 
 % Make sure parameters are all positive
-if any(p<0), diff = Inf; return; end
+if any(p<0), delta = Inf; return; end
 
 % Unpack input
 fit_noise_floor = p(2);
 irf_fun = irf{1};
 irf_noise_floor = irf{2};
+irf_width = irf{3};
+
+% Make sure the time constants are not shorter than irf_width/5
+if any(p(4:2:end)<irf_width/5), delta = Inf; return; end
 
 %% Fit
-fit = irf_conv(@(k)eir_model(k,p),irf_fun,t); % Convolve eir_model with irf
-fit = fit + irf_noise_floor + fit_noise_floor; % Add the noise floor back up
-fit = log10(fit); % Log10 for fitting
-diff = (data-fit).*weights; % Difference between data and fit
+% Convolve eir_model with irf, and  add the noise floor back up
+m = @(t,p) irf_conv(@(k)eir_model(k,p),irf_fun,t) + irf_noise_floor + fit_noise_floor;
+fit = log10(m(t,p)); % Log10 for fitting
+delta = (data-fit).*weights; % Difference between data and fit
 
 %% Plot
 if plot_flag
@@ -42,41 +46,21 @@ if plot_flag
     end
     grid on; box on;
     title(sprintf('TCSPC data fit, with IRF, %d eir functions',ne))
-    xlim([min(t),max(t)]); ylim([-1 5]);
-    ylabel('log10( Intensity )');
-    s.XTickLabel = [];
+    xlim([min(t),max(t)]); s.YLim = [0 s.YLim(2)];
+    s.XTickLabel = []; ylabel('log_{10}( Intensity )');
     
     s = subplot(4,1,4);
-    plot(t,diff,'k');
+    plot(t,delta,'k');
     xlim([min(t),max(t)]);
     s.YLim = [-1 1]*max(abs(s.YLim));
     grid on; box on;
     title('Residuals');
-    xlabel('time / ps'); ylabel('\Delta log10( I )');
+    xlabel('time / ps'); ylabel('\Delta log_{10}( I )');
     drawnow;
 end
 
 %% Root mean square residuals
 % Make sure no infs (-ve data) or nans (incomplete data)
-diff(isinf(diff) | isnan(diff)) = [];
-diff = sqrt(mean(diff.^2));
-
-% Alias the model function so it can be an output argument
-if nargout > 1
-    m = @(t,p) irf_conv(@(k)eir_model(k,p),irf_fun,t) + irf_noise_floor + fit_noise_floor;
-end
-end
-
-function y = eir(t,t0,h,tau)
-%% y = eir(t,t0,h,tau)
-% Exponential impulse response funciton
-%
-% t   - time axis
-% t0  - time of the impulse
-% h   - height of the response
-% tau - time constant of the resulting exponential
-
-y = zeros(size(t));
-region = (t>t0);
-y(region) = h*exp(-(t(region)-t0)./tau);
+delta(isinf(delta) | isnan(delta)) = [];
+delta = sqrt(mean(delta.^2));
 end

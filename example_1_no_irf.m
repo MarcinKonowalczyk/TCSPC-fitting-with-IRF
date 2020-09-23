@@ -1,8 +1,8 @@
 close all; clear; clc;
 
 %% Load data
-%D = csvread('data_1.csv',1,0);
-D = csvread('data_2.csv',1,0);
+%D = csvread('./data/data_1.csv',1,0);
+D = csvread('./data/data_2.csv',1,0);
 t = D(:,1); y = D(:,2);
 
 %% Single exponential model + t0 + noise floor

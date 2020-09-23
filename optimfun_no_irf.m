@@ -1,5 +1,5 @@
-function [diff,m] = optimfun_no_irf(p,time,data,weights,plot_flag)
-%% [diff,m] = optimfun_no_irf(p,time,data,weights,plot_flag)
+function [delta,m] = optimfun_no_irf(p,t,data,weights,plot_flag)
+%% [delta,m] = optimfun_no_irf(p,time,data,weights,plot_flag)
 % Sum of n expnential impulse response functions with a noise floor.
 % 
 % 'p' if the vector of model parameters
@@ -11,59 +11,47 @@ function [diff,m] = optimfun_no_irf(p,time,data,weights,plot_flag)
 
 %%
 if nargin < 5 || isempty(plot_flag), plot_flag = false; end
-if nargin < 4 || isempty(weights), weights = ones(size(time)); end
+if nargin < 4 || isempty(weights), weights = ones(size(t)); end
 
 % Make sure parameters are all positive
-if any(p<0), diff = Inf; return; end
+if any(p<0), delta = Inf; return; end
+% Make sure the time constants are not shorter than time axis spacing
+if any(p(4:2:end)<2*(t(2)-t(1))), delta = 1e6; return; end
 
 fit_noise_floor = p(2);
 
 %% Model function
 m = @(t,p) eir_model(t,p) + fit_noise_floor; % Alias the function so it can be returned
-fit = log10(m(time,p)); % Fit
-diff = (data-fit).*weights; % Difference between data and fit
+fit = log10(m(t,p)); % Fit
+delta = (data-fit).*weights; % Difference between data and fit
 
 %% Plot
 if plot_flag
     figure(1); clf;
     s = subplot(4,1,1:3); hold on;
-    plot(time,data,time,fit,'k--');
+    plot(t,data,t,fit,'k--');
     % Plot all the exp. impulse response functions
     ne = (numel(p)-2)/2; % Number of eir components
     for j = 1:ne
         offset = 2*(j-1);
-        y = eir(time,p(1),p(3+offset),p(4+offset)) +  p(2)*ones(size(time));
-        plot(time,log10(y))
+        y = eir(t,p(1),p(3+offset),p(4+offset)) +  p(2)*ones(size(t));
+        plot(t,log10(y))
     end
     grid on; box on;
     title(sprintf('TCSPC data fit, no IRF, %d eir functions',ne))
-    xlim([min(time),max(time)]); s.YLim = [0 s.YLim(2)];
-    s.XTickLabel = []; ylabel('log10( Intensity )');
+    xlim([min(t),max(t)]); s.YLim = [0 s.YLim(2)];
+    s.XTickLabel = []; ylabel('log_{10}( Intensity )');
     
     s = subplot(4,1,4);
-    plot(time,diff,'k');
-    xlim([min(time),max(time)]); s.YLim = [-1 1]*max(abs(s.YLim));
+    plot(t,delta,'k');
+    xlim([min(t),max(t)]); s.YLim = [-1 1]*max(abs(s.YLim));
     grid on; box on; title('Residuals');
-    xlabel('time / ns'); ylabel('\Delta log10( I )');
+    xlabel('time / ns'); ylabel('\Delta log_{10}( I )');
     drawnow;
 end
 
 %% Root mean square residuals
 % Make sure no infs (-ve data) or nans (incomplete data)
-diff(isinf(diff) | isnan(diff)) = [];
-diff = sqrt(mean(diff.^2));
-end
-
-function y = eir(t,t0,h,tau)
-%% y = eir(t,t0,h,tau)
-% Exponential impulse response funciton
-%
-% t   - time axis
-% t0  - time of the impulse
-% h   - height of the response
-% tau - time constant of the resulting exponential
-
-y = zeros(size(t));
-region = (t>t0);
-y(region) = h*exp(-(t(region)-t0)./tau);
+delta(isinf(delta) | isnan(delta)) = [];
+delta = sqrt(mean(delta.^2));
 end
