@@ -2,6 +2,7 @@
 
 Demonstration of fitting Time-Correlated Single Photon Counting (TCSPC) data with consideration of the Instrument Response Function (IRF).
 
+Note that the example data included in this repository is **artificial**, although its appearance is based on that of a real measurement. The IRF is real, and has been recorded on a Edinburgh Instruments [FS5 Spectrofluorometer](https://www.edinst.com/products/fs5-spectrofluorometer/).
 
 <p align="center"><img src="./figures/display_image.png" width="75%"></p>
 
@@ -9,7 +10,7 @@ Demonstration of fitting Time-Correlated Single Photon Counting (TCSPC) data wit
 
 For further reading on TCSPC and IRF fitting see the following:
 
-- Tesa et al., [_"Measurement of Photoluminescence lifetimes in the μs Range"_](https://www.edinst.com/wp-content/uploads/2018/06/TN_48-Measurement-of-Photoluminescence.pdf), Techical Note from Edinburgh Instruments, TN_P48, 31 May 2018
+- Tesa et al., [_"Measurement of Photoluminescence lifetimes in the μs Range"_](https://www.edinst.com/wp-content/uploads/2018/06/TN_48-Measurement-of-Photoluminescence.pdf), Technical Note from Edinburgh Instruments, TN_P48, 31 May 2018
 
 - Schönau et al., [_"Performing high speed lifetime measurements of proteins using a 280 nm picosecond laser"_](https://www.picoquant.com/images/uploads/page/files/19917/appnote_visuv_280_spectroscopy.pdf), Application Note from PicoQuant, 2019
 
