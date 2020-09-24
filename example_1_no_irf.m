@@ -17,7 +17,7 @@ fprintf('Single exponential fit results\n')
 fprintf(' Rms residuals: %.4f log10(counts)\n',fval);
 fprintf(' t0: %.2f ns\n',pf(1));
 fprintf(' Noise floor: %.1f counts\n',pf(2));
-fprintf(' Magnitude: %.0f counts\n',pf(3));
+fprintf(' Magnitude: %.1fk counts\n',pf(3)/1e3);
 fprintf(' Time constant: %.2f ns\n',pf(4));
 
 %% Single exponential model + t0 + noise floor
@@ -32,8 +32,8 @@ fprintf(' Rms residuals: %.4f log10(counts)\n',fval);
 fprintf(' t0: %.2f ns\n',pf(1));
 fprintf(' Noise floor: %.1f counts\n',pf(2));
 fprintf(' 1st component\n')
-fprintf('  Magnitude: %.0f counts\n',pf(3));
+fprintf('  Magnitude: %.1fk counts\n',pf(3)/1e3);
 fprintf('  Time constant: %.2f ns\n',pf(4));
 fprintf(' 2nd component\n')
-fprintf('  Magnitude: %.0f counts\n',pf(5));
+fprintf('  Magnitude: %.1fk counts\n',pf(5)/1e3);
 fprintf('  Time constant: %.2f ns\n',pf(6));

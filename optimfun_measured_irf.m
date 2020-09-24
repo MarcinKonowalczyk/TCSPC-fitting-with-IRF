@@ -1,9 +1,8 @@
-function [delta,m] = optimfun_irf(p,t,data,irf,weights,plot_flag)
-%% [delta,m] = optimfun_irf(p,t,data,irf,weights,plot_flag)
-% Sum of n expnential impulse responses with a noise floor.
+function [delta,m] = optimfun_measured_irf(p,t,data,irf,weights,plot_flag)
+%% [delta,m] = optimfun_measured_irf(p,t,data,irf,weights,plot_flag)
 % 
 % 'p' if the vector of model parameters
-% p(1) - t0. This is given by the IRF and 
+% p(1) - t0
 % p(2) - Noise floor
 % p(3:4) - amplitude and time constant of 1st exp. component
 % p(5:6) - -//- of 2nd exp. component
@@ -16,8 +15,6 @@ if nargin < 5 || isempty(weights), weights = ones(size(t)); end
 % Make sure parameters are all positive
 if any(p<0), delta = Inf; return; end
 
-% Unpack input
-fit_noise_floor = p(2);
 irf_fun = irf{1};
 irf_noise_floor = irf{2};
 irf_width = irf{3};
@@ -26,8 +23,8 @@ irf_width = irf{3};
 if any(p(4:2:end)<irf_width/5), delta = Inf; return; end
 
 %% Fit
-% Convolve eir_model with irf, and  add the noise floor back up
-m = @(t,p) irf_conv(@(k)eir_model(k,p),irf_fun,t) + irf_noise_floor + fit_noise_floor;
+% Convolve eir_sum with irf, and add the noise floor back up
+m = @(t,p) irf_conv(@(k)eir_sum(k,p(1),p(3:end)),irf_fun,t) + irf_noise_floor + p(2);
 fit = log10(m(t,p)); % Log10 for fitting
 delta = (data-fit).*weights; % Difference between data and fit
 
@@ -41,16 +38,16 @@ if plot_flag
     figure(1); clf;
     s = subplot(4,1,1:3); hold on;
     plot(t,data,t,fit,'k--');
-    
     % Plot all the exp. impulse response functions
-    ne = (numel(p)-2)/2; % Number of eir components
-    for j = 1:ne
+    t0 = p(1); fit_noise_floor = p(2); exp_params = p(3:end);
+    for j = 1:(numel(exp_params)/2)
         offset = 2*(j-1);
-        y = @(t) eir(t,p(1),p(3+offset),p(4+offset));
-        plot(t,log10(irf_conv(y,irf_fun,t) + irf_noise_floor + fit_noise_floor))
+        y = @(t) eir(t,t0,exp_params(1+offset),exp_params(2+offset));
+        y = irf_conv(y,irf_fun,t) + irf_noise_floor + fit_noise_floor;
+        plot(t,log10(y))
     end
     grid on; box on;
-    title(sprintf('TCSPC data fit, with IRF, %d eir functions',ne))
+    title(sprintf('TCSPC data fit, with IRF, %d eir functions',numel(exp_params)/2))
     xlim([min(t),max(t)]); s.YLim = [0 s.YLim(2)];
     s.XTickLabel = []; ylabel('log_{10}( Intensity )');
     
@@ -60,7 +57,7 @@ if plot_flag
     s.YLim = [-1 1]*max(abs(s.YLim));
     grid on; box on;
     title('Residuals');
-    xlabel('time / ps'); ylabel('\Delta log_{10}( I )');
+    xlabel('time / ns'); ylabel('\Delta log_{10}( I )');
     drawnow;
 end
 end
