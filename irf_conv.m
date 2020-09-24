@@ -1,5 +1,5 @@
-function yc = irf_conv(fun,irf,t,N,method)
-%% yc = irf_conv(fun,irf,t,N,method)
+function yc = irf_conv(fun,irf_fun,t,N,method)
+%% yc = irf_conv(fun,irf_fun,t,N,method)
 %
 % Written by Marcin Konowalczyk
 % Timmel Group @ Oxford University
@@ -17,7 +17,9 @@ pt3 = pt((N+1):(N+(N+1)));
 %% Do the convolution
 % Evaluate fun at x
 yf = fun(pt); yf = yf(:);
-K = irf(pt3); K = K(:); % Convolution kernel
+K = irf_fun(pt3);
+K = K./sum(K);
+K = K(:); % Convolution kernel
 
 % Convolve
 switch method

@@ -31,6 +31,11 @@ m = @(t,p) irf_conv(@(k)eir_model(k,p),irf_fun,t) + irf_noise_floor + fit_noise_
 fit = log10(m(t,p)); % Log10 for fitting
 delta = (data-fit).*weights; % Difference between data and fit
 
+%% Root mean square residuals
+% Make sure no infs (-ve data) or nans (incomplete data)
+delta(isinf(delta) | isnan(delta)) = [];
+delta = sqrt(mean(delta.^2));
+
 %% Plot
 if plot_flag
     figure(1); clf;
@@ -50,7 +55,7 @@ if plot_flag
     s.XTickLabel = []; ylabel('log_{10}( Intensity )');
     
     s = subplot(4,1,4);
-    plot(t,delta,'k');
+    plot(t,(data-fit).*weights,'k');
     xlim([min(t),max(t)]);
     s.YLim = [-1 1]*max(abs(s.YLim));
     grid on; box on;
@@ -58,9 +63,4 @@ if plot_flag
     xlabel('time / ps'); ylabel('\Delta log_{10}( I )');
     drawnow;
 end
-
-%% Root mean square residuals
-% Make sure no infs (-ve data) or nans (incomplete data)
-delta(isinf(delta) | isnan(delta)) = [];
-delta = sqrt(mean(delta.^2));
 end
